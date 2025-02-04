@@ -48,10 +48,13 @@ def main():
         nurse: st.sidebar.multiselect(f"{nurse} Unavailable Days in {month}/{year}", list(range(1, 32))) 
         for nurse in nurses
     }
-    shift_preferences = {
-        nurse: st.sidebar.selectbox(f"{nurse} Preferred Shift", ["Morning", "Afternoon", "Night"], index=random.randint(0,2)) 
-        for nurse in nurses
-    }
+    shift_preferences = {}
+    
+    for nurse in nurses:
+        try:
+            shift_preferences[nurse] = st.sidebar.selectbox(f"{nurse} Preferred Shift", ["Morning", "Afternoon", "Night"], index=random.randint(0,2))
+        except:
+            shift_preferences[nurse] = "Morning"  # Default value in case of an error
     
     if st.sidebar.button("Generate Schedule"):
         schedule = generate_schedule(nurses, unavailable_days, shift_preferences, month, year)
