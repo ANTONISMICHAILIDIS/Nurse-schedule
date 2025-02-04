@@ -2,37 +2,35 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
+from collections import defaultdict
 
 # Function to generate nurse shift schedule
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
     days_in_month = (datetime.date(year, month, 1).replace(day=28) + datetime.timedelta(days=4)).day
     shifts = ["Morning", "Afternoon", "Night"]
     schedule = {f"Day {i+1}": {shift: [] for shift in shifts} for i in range(days_in_month)}
+    shift_count = defaultdict(int)  # Track assigned shifts per nurse
     
     for day in range(1, days_in_month + 1):
         available_nurses = [n for n in nurses if day not in unavailable_days.get(n, [])]
         
         for shift in shifts:
             preferred_nurses = [n for n in available_nurses if (day, shift) in shift_preferences.get(n, [])]
+            preferred_nurses = sorted(preferred_nurses, key=lambda x: shift_count[x])  # Prioritize less assigned nurses
             
             if len(preferred_nurses) >= 2:
                 assigned = preferred_nurses[:2]
             elif len(preferred_nurses) == 1:
                 other_nurses = [n for n in available_nurses if n not in preferred_nurses]
+                other_nurses = sorted(other_nurses, key=lambda x: shift_count[x])
                 assigned = preferred_nurses + (other_nurses[:1] if other_nurses else [])
             else:
-                assigned = available_nurses[:2]
+                available_nurses_sorted = sorted(available_nurses, key=lambda x: shift_count[x])
+                assigned = available_nurses_sorted[:2]
             
-            schedule[f"Day {day}"][shift] = assigned
-    
-    # Fill empty slots with available nurses
-    for day in range(1, days_in_month + 1):
-        available_nurses = [n for n in nurses if day not in unavailable_days.get(n, [])]
-        
-        for shift in shifts:
-            if len(schedule[f"Day {day}"][shift]) < 2:
-                remaining_nurses = [n for n in available_nurses if n not in schedule[f"Day {day}"][shift]]
-                schedule[f"Day {day}"][shift] += remaining_nurses[:(2 - len(schedule[f"Day {day}"][shift]))]
+            for nurse in assigned:
+                schedule[f"Day {day}"][shift].append(nurse)
+                shift_count[nurse] += 1  # Increase assigned shift count
     
     return pd.DataFrame(schedule).T
 
