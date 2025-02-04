@@ -7,14 +7,13 @@ import datetime
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
     days_in_month = (datetime.date(year, month, 1).replace(day=28) + datetime.timedelta(days=4)).day
     shifts = ["Morning", "Afternoon", "Night"]
-    schedule = {nurse: [None] * days_in_month for nurse in nurses}
+    schedule = {f"Day {i+1}": {shift: [] for shift in shifts} for i in range(days_in_month)}
     
-    for day in range(days_in_month):
-        assigned_nurses = {"Morning": [], "Afternoon": [], "Night": []}
-        available_nurses = [n for n in nurses if day + 1 not in unavailable_days.get(n, [])]
+    for day in range(1, days_in_month + 1):
+        available_nurses = [n for n in nurses if day not in unavailable_days.get(n, [])]
         
         for shift in shifts:
-            preferred_nurses = [n for n in available_nurses if shift_preferences.get(n) == shift]
+            preferred_nurses = [n for n in available_nurses if (day, shift) in shift_preferences.get(n, [])]
             
             if len(preferred_nurses) >= 2:
                 assigned = preferred_nurses[:2]
@@ -24,11 +23,9 @@ def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
             else:
                 assigned = available_nurses[:2]
             
-            for nurse in assigned:
-                schedule[nurse][day] = shift
-                assigned_nurses[shift].append(nurse)
+            schedule[f"Day {day}"][shift] = assigned
     
-    return pd.DataFrame(schedule, index=[f"Day {i+1}" for i in range(days_in_month)])
+    return pd.DataFrame(schedule).T
 
 # Main function for Streamlit UI
 def main():
@@ -48,7 +45,8 @@ def main():
         for nurse in nurses
     }
     shift_preferences = {
-        nurse: st.sidebar.selectbox(f"{nurse} Preferred Shift", ["Morning", "Afternoon", "Night"]) 
+        nurse: st.sidebar.multiselect(f"{nurse} Preferred Days & Shifts", 
+                                      [(d, s) for d in range(1, 32) for s in ["Morning", "Afternoon", "Night"]]) 
         for nurse in nurses
     }
     
