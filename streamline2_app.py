@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import random
 import datetime
 import calendar
+import random  # Ensure random module is imported
 
 # Function to generate nurse shift schedule
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
@@ -21,7 +21,8 @@ def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
             if len(preferred_nurses) >= 2:
                 assigned = random.sample(preferred_nurses, 2)
             elif len(preferred_nurses) == 1:
-                assigned = preferred_nurses + random.sample([n for n in available_nurses if n not in preferred_nurses], 1)
+                other_nurses = [n for n in available_nurses if n not in preferred_nurses]
+                assigned = preferred_nurses + (random.sample(other_nurses, 1) if other_nurses else [])
             else:
                 assigned = random.sample(available_nurses, min(len(available_nurses), 2))
             
