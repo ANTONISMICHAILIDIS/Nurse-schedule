@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import datetime
 
-
 # Function to generate nurse shift schedule
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
     days_in_month = (datetime.date(year, month, 1).replace(day=28) + datetime.timedelta(days=4)).day
@@ -18,12 +17,12 @@ def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
             preferred_nurses = [n for n in available_nurses if shift_preferences.get(n) == shift]
             
             if len(preferred_nurses) >= 2:
-                assigned = random.sample(preferred_nurses, 2)
+                assigned = preferred_nurses[:2]
             elif len(preferred_nurses) == 1:
                 other_nurses = [n for n in available_nurses if n not in preferred_nurses]
-                assigned = preferred_nurses + (random.sample(other_nurses, 1) if other_nurses else [])
+                assigned = preferred_nurses + (other_nurses[:1] if other_nurses else [])
             else:
-                assigned = random.sample(available_nurses, min(len(available_nurses), 2))
+                assigned = available_nurses[:2]
             
             for nurse in assigned:
                 schedule[nurse][day] = shift
@@ -48,13 +47,10 @@ def main():
         nurse: st.sidebar.multiselect(f"{nurse} Unavailable Days in {month}/{year}", list(range(1, 32))) 
         for nurse in nurses
     }
-    shift_preferences = {}
-    
-    for nurse in nurses:
-        try:
-            shift_preferences[nurse] = st.sidebar.selectbox(f"{nurse} Preferred Shift", ["Morning", "Afternoon", "Night"], index=random.randint(0,2))
-        except:
-            shift_preferences[nurse] = "Morning"  # Default value in case of an error
+    shift_preferences = {
+        nurse: st.sidebar.selectbox(f"{nurse} Preferred Shift", ["Morning", "Afternoon", "Night"]) 
+        for nurse in nurses
+    }
     
     if st.sidebar.button("Generate Schedule"):
         schedule = generate_schedule(nurses, unavailable_days, shift_preferences, month, year)
