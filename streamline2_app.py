@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
-import calendar
-import random  # Ensure random module is imported
+import random
 
 # Function to generate nurse shift schedule
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
-    days_in_month = calendar.monthrange(year, month)[1]
+    days_in_month = (datetime.date(year, month, 1).replace(day=28) + datetime.timedelta(days=4)).day
     shifts = ["Morning", "Afternoon", "Night"]
     schedule = {nurse: [None] * days_in_month for nurse in nurses}
     
@@ -46,7 +45,7 @@ def main():
     # Input fields
     nurses = [f"Nurse {i+1}" for i in range(20)]
     unavailable_days = {
-        nurse: st.sidebar.multiselect(f"{nurse} Unavailable Days in {calendar.month_name[month]} {year}", list(range(1, calendar.monthrange(year, month)[1] + 1))) 
+        nurse: st.sidebar.multiselect(f"{nurse} Unavailable Days in {month}/{year}", list(range(1, 32))) 
         for nurse in nurses
     }
     shift_preferences = {
@@ -56,7 +55,7 @@ def main():
     
     if st.sidebar.button("Generate Schedule"):
         schedule = generate_schedule(nurses, unavailable_days, shift_preferences, month, year)
-        st.success(f"Shift schedule for {calendar.month_name[month]} {year} generated successfully!")
+        st.success(f"Shift schedule for {month}/{year} generated successfully!")
         st.dataframe(schedule)
     
     # Footer
