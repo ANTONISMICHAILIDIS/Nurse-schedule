@@ -25,11 +25,20 @@ def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
             
             schedule[f"Day {day}"][shift] = assigned
     
+    # Fill empty slots with available nurses
+    for day in range(1, days_in_month + 1):
+        available_nurses = [n for n in nurses if day not in unavailable_days.get(n, [])]
+        
+        for shift in shifts:
+            if len(schedule[f"Day {day}"][shift]) < 2:
+                remaining_nurses = [n for n in available_nurses if n not in schedule[f"Day {day}"][shift]]
+                schedule[f"Day {day}"][shift] += remaining_nurses[:(2 - len(schedule[f"Day {day}"][shift]))]
+    
     return pd.DataFrame(schedule).T
 
 # Main function for Streamlit UI
 def main():
-    st.set_page_config(page_title="Nurse Shift Scheduler", layout="centered")
+    st.set_page_config(page_title="Nurse Shift Scheduler", layout="wide")
     st.title("Nurse Shift Assignment Scheduler")
     st.markdown("Assign shifts based on nurse preferences and availability for each month.")
     
