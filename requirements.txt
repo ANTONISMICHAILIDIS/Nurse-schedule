@@ -2,4 +2,4 @@
  pandas 
  numpy
  datetime
-defaultdict
+from collections import defaultdict
