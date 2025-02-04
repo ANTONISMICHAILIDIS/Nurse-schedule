@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import random
+import datetime
 import calendar
-from datetime import datetime
 
 # Function to generate nurse shift schedule
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
@@ -23,7 +23,7 @@ def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
             elif len(preferred_nurses) == 1:
                 assigned = preferred_nurses + random.sample([n for n in available_nurses if n not in preferred_nurses], 1)
             else:
-                assigned = random.sample(available_nurses, 2)
+                assigned = random.sample(available_nurses, min(len(available_nurses), 2))
             
             for nurse in assigned:
                 schedule[nurse][day] = shift
@@ -38,7 +38,7 @@ def main():
     st.markdown("Assign shifts based on nurse preferences and availability for each month.")
     
     # Select month and year
-    today = datetime.today()
+    today = datetime.date.today()
     month = st.sidebar.selectbox("Select Month", list(range(1, 13)), index=today.month - 1)
     year = st.sidebar.selectbox("Select Year", list(range(today.year, today.year + 2)), index=0)
     
