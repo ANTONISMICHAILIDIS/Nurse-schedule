@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
-import random
+
 
 # Function to generate nurse shift schedule
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
