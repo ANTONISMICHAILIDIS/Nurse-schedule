@@ -7,13 +7,16 @@ import datetime
 def generate_schedule(nurses, unavailable_days, shift_preferences, month, year):
     days_in_month = (datetime.date(year, month, 1).replace(day=28) + datetime.timedelta(days=4)).day
     shifts = ["Morning", "Afternoon", "Night"]
-    schedule = {f"Day {i+1}": {shift: [] for shift in shifts} for i in range(1, days_in_month + 1)}
+    schedule = {f"Day {i+1}": {shift: [] for shift in shifts} for i in range(days_in_month)}
     shift_count = {nurse: 0 for nurse in nurses}  # Track assigned shifts per nurse
     
     for day in range(1, days_in_month + 1):
         available_nurses = [n for n in nurses if day not in unavailable_days.get(n, [])]
         
         for shift in shifts:
+            if f"Day {day}" not in schedule:
+                schedule[f"Day {day}"] = {s: [] for s in shifts}
+            
             preferred_nurses = [n for n in available_nurses if (day, shift) in shift_preferences.get(n, [])]
             preferred_nurses.sort(key=lambda x: shift_count[x])  # Prioritize less assigned nurses
             
